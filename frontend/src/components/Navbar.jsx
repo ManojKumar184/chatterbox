@@ -2,11 +2,11 @@ import { Users, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }) {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   return (
     <header className="flex justify-between items-center bg-indigo-600 text-white px-6 py-3 shadow-md z-50 w-full">
-      {/* Left: Sidebar toggle */}
+      {/* Left: Sidebar toggle (mobile only) */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="md:hidden"
