@@ -12,7 +12,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", data);
+      const res = await axios.post("https://chatterbox-9tlu.onrender.com/api/auth/login", data);
       login(res.data, res.data.token); // ✅ pass res.data as user
       navigate("/");
     } catch (err) {
