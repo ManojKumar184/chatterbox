@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getMessages } from "../utils/api.js"; // fetch messages from backend
 import socket from "../utils/socket.js";
 
 export default function MessageBox({ selectedUser }) {
@@ -15,6 +16,13 @@ export default function MessageBox({ selectedUser }) {
     // Clear messages when switching user
     setMessages([]);
 
+    // Fetch historical messages from backend
+    const fetchMessages = async () => {
+      const data = await getMessages(roomId, user.token);
+      if (Array.isArray(data)) setMessages(data);
+    };
+    fetchMessages();
+
     // Join socket room
     socket.emit("joinRoom", roomId);
 
@@ -22,7 +30,7 @@ export default function MessageBox({ selectedUser }) {
     const handleReceive = (msg) => {
       if (msg.roomId === roomId) {
         setMessages((prev) => {
-          // Prevent duplicates if message already exists
+          // Prevent duplicates
           if (prev.some((m) => m._id === msg._id)) return prev;
           return [...prev, msg];
         });
