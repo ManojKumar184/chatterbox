@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "https://chatterbox-9tlu.onrender.com";
+const API_BASE = "https://chatterbox-9tlu.onrender.com/api";
 
 const getConfig = (token) => ({
   headers: {
