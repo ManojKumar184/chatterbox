@@ -21,7 +21,7 @@ const server = createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://chatterbox-zeta-blue.vercel.app/", // React frontend URL
+    origin: "https://chatterbox-zeta-blue.vercel.app", // React frontend URL
     methods: ["GET", "POST"],
   },
 });
