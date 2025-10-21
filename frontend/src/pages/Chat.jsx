@@ -11,7 +11,7 @@ export default function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-gray-100 relative">
+    <div className="flex flex-col h-screen w-screen bg-gray-100 relative overflow-x-hidden">
       {/* Navbar always visible */}
       <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -29,7 +29,7 @@ export default function Chat() {
 
         {/* Sidebar overlay for mobile */}
         <div
-          className={`fixed inset-0 z-40 md:hidden transition-transform duration-300 ${
+          className={`fixed inset-0 z-40 md:hidden w-full transition-transform duration-300 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
