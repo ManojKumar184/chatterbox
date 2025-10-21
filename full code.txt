@@ -1,0 +1,911 @@
+mern_chat_app
+ backend\
+  config\
+    db.js
+  controllers\
+    authController.js
+    messageController.js
+  middleware\
+    authMiddleware.js
+  models\
+    messageModel.js
+    userModel.js
+  routes\
+    authRoutes.js
+    messageRoutes.js
+  server.js
+  .env
+ frontend\
+  src\
+    components\
+      ChatList.jsx
+      MessageBox.jsx
+      MessageInput.jsx
+      Navba.jsx
+    context\
+      AuthContext.jsx
+    pages\
+      Chat.jsx
+      Login.jsx
+      Register.jsx
+    utils\
+      api.js
+    App.jsx
+    App.css
+    main.jsx
+    index.css
+
+first backend
+
+config\db.js
+import mongoose from "mongoose";
+
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+export default connectDB;
+
+
+controllers/authController.js
+import jwt from "jsonwebtoken";
+import User from "../models/userModel.js";
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
+
+export const registerUser = async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const exists = await User.findOne({ username });
+    if (exists) return res.status(400).json({ message: "User already exists" });
+
+    const user = await User.create({ username, password });
+
+    res.status(201).json({
+      _id: user._id,
+      username: user.username,
+      token: generateToken(user._id),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user || !(await user.matchPassword(password))) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      token: generateToken(user._id),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ _id: { $ne: req.user._id } }).select("-password");
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+controllers/messageController.js
+// there is nothing in this file 
+
+
+middleware/authMiddleware.js
+import jwt from "jsonwebtoken";
+import User from "../models/userModel.js";
+
+export const protect = async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      // Debugging
+      console.log("Token received:", token);
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select("-password");
+      if (!req.user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      return next();
+    } catch (err) {
+      console.error(err);
+      return res.status(401).json({ message: "Not authorized, token failed" });
+    }
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+};
+
+
+models/messageModel.js
+import mongoose from "mongoose";
+
+const messageSchema = mongoose.Schema(
+  {
+    user: String,
+    message: String,
+  },
+  { timestamps: true }
+);
+
+const Message = mongoose.model("Message", messageSchema);
+export default Message;
+
+
+models/userModel.js
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+
+const userSchema = new mongoose.Schema(
+  {
+    username: { type: String, unique: true, required: true },
+    password: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+// hash password before saving
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+const User = mongoose.model("User", userSchema);
+export default User;
+
+
+routes/authRoutes.js
+import express from "express";
+import { registerUser, loginUser, getAllUsers } from "../controllers/authController.js";
+import { protect } from "../middleware/authMiddleware.js";
+
+const router = express.Router();
+
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.get("/users", protect, getAllUsers);   // 👈 new route
+
+export default router;
+
+
+routes/messageRoutes.js
+import express from "express";
+import Message from "../models/messageModel.js";
+
+const router = express.Router();
+
+// Get all messages
+router.get("/", async (req, res) => {
+  const messages = await Message.find();
+  res.json(messages);
+});
+
+// Post a message
+router.post("/", async (req, res) => {
+  const { user, message } = req.body;
+  const newMessage = new Message({ user, message });
+  await newMessage.save();
+  res.status(201).json(newMessage);
+});
+
+export default router;
+
+
+.env
+MONGO_URI=mongodb+srv://Manoj184:manoj%40184@realtime-chat-app.n2c8iof.mongodb.net/
+PORT=5000
+JWT_SECRET=secret_key
+
+
+server.js
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import connectDB from "./config/db.js";
+import messageRoutes from "./routes/messageRoutes.js";
+import Message from "./models/messageModel.js";
+import authRoutes from "./routes/authRoutes.js";
+
+dotenv.config();
+connectDB();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use("/api/messages", messageRoutes);
+app.use("/api/auth", authRoutes);
+
+const server = createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173", // React frontend URL
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("sendMessage", async (data) => {
+    const message = await Message.create(data);
+    io.emit("receiveMessage", message); // broadcast message
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+
+next frontend\src\
+
+components/ChatList.jsx
+import { useEffect, useState } from "react";
+import { getUsers } from "../utils/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
+
+export default function ChatList({ onSelectUser, selectedUser }) {
+  const { user } = useAuth(); // { user: {...}, token: "..." }
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    if (!user?.token || !user.user?._id) return; // safety check
+
+    const fetchUsers = async () => {
+      const allUsers = await getUsers(user.token);
+      if (!Array.isArray(allUsers)) return;
+      setUsers(allUsers.filter((u) => u._id !== user.user._id));
+    };
+    fetchUsers();
+  }, [user]);
+
+  return (
+    <aside className="hidden md:block bg-white border-r w-1/4 lg:w-1/5 shadow-sm">
+      <div className="p-4 border-b text-indigo-600 font-semibold">Users</div>
+      <ul className="p-2 space-y-2">
+        {users.map((u) => (
+          <li
+            key={u._id}
+            onClick={() => onSelectUser(u)}
+            className={`p-2 text-gray-800 rounded-lg hover:bg-indigo-300 cursor-pointer flex items-center gap-2 ${
+              selectedUser?._id === u._id ? "bg-indigo-100" : ""
+            }`}
+          >
+            <div className="w-10 h-10 rounded-full bg-gray-300" />
+            <span className="font-medium">{u.username}</span>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+
+
+components/MessageBox.jsx
+import { useEffect, useState, useRef } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import { getMessages } from "../utils/api.js";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
+
+export default function MessageBox({ selectedUser }) {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState([]);
+  const scrollRef = useRef();
+
+  useEffect(() => {
+    if (!selectedUser) return;
+
+    const fetchMessages = async () => {
+      const data = await getMessages(selectedUser._id, user.token);
+      setMessages(data);
+    };
+    fetchMessages();
+
+    const roomId = [user._id, selectedUser._id].sort().join("_");
+    socket.emit("joinRoom", roomId);
+
+    socket.on("receiveMessage", (msg) => {
+      if (msg.roomId === roomId) setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => socket.emit("leaveRoom", roomId);
+  }, [selectedUser, user]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  return (
+    <div className="space-y-2 text-gray-800">
+      {messages.map((msg, i) => (
+        <div
+          key={i}
+          ref={scrollRef}
+          className={`p-2 rounded-lg max-w-xs ${
+            msg.sender === user._id
+              ? "bg-indigo-100 self-end ml-auto"
+              : "bg-gray-100"
+          }`}
+        >
+          {msg.text}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
+
+components/MessageInput.jsx
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import { sendMessage as apiSendMessage } from "../utils/api.js";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
+
+export default function MessageInput({ selectedUser }) {
+  const { user } = useAuth();
+  const [text, setText] = useState("");
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    const roomId = [user._id, selectedUser._id].sort().join("_");
+
+    const newMsg = {
+      sender: user._id,
+      receiver: selectedUser._id,
+      text,
+      roomId,
+    };
+
+    socket.emit("sendMessage", newMsg);
+    await apiSendMessage(newMsg, user.token);
+    setText("");
+  };
+
+  return (
+    <form onSubmit={handleSend} className="flex border-t p-3 bg-white">
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Type a message..."
+        className="text-gray-800 flex-1 border rounded-l-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-400 placeholder-gray-400"
+      />
+      <button className="bg-indigo-600 text-white px-5 py-2 rounded-r-lg hover:bg-indigo-700">
+        Send
+      </button>
+    </form>
+  );
+}
+
+
+
+components/Navbar.jsx
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import { Users, LogOut } from "lucide-react";
+
+export default function Navbar() {
+  const { user, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  return (
+    <header className="flex justify-between items-center bg-indigo-600 text-white px-6 py-3 md:hidden shadow-md">
+      <div className="flex items-center gap-3">
+        <button onClick={() => setSidebarOpen((prev) => !prev)}>
+          <Users className="w-6 h-6" />
+        </button>
+        <h1 className="text-lg font-semibold">Chat — {user.username}</h1>
+      </div>
+      <button
+        onClick={logout}
+        className="bg-red-500 px-3 py-1 rounded hover:bg-red-600 text-sm flex items-center gap-1"
+      >
+        <LogOut size={16} /> Logout
+      </button>
+    </header>
+  );
+}
+
+
+context/authContext.jsx
+import { createContext, useContext, useState, useEffect } from "react";
+
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null); // { user: {}, token: "" }
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem("user");
+      const savedToken = localStorage.getItem("token");
+      if (savedUser && savedToken) {
+        setUser({ user: JSON.parse(savedUser), token: savedToken });
+      }
+    } catch (err) {
+      console.error("Error parsing localStorage data:", err);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      setUser(null);
+    }
+  }, []);
+
+  const login = (userData, token) => {
+    if (!userData || !token) {
+      console.error("Invalid login data:", userData, token);
+      return;
+    }
+    setUser({ user: userData, token });
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token);
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);
+
+
+pages/Chat.jsx
+import { useState } from "react";
+import ChatList from "../components/ChatList.jsx";
+import MessageBox from "../components/MessageBox.jsx";
+import MessageInput from "../components/MessageInput.jsx";
+import Navbar from "../components/Navbar.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+
+export default function Chat() {
+  const { user } = useAuth();
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  return (
+    <div className="flex flex-col md:flex-row h-screen bg-gray-100">
+      {/* Navbar for mobile */}
+      <Navbar />
+
+      {/* Sidebar */}
+      <ChatList onSelectUser={setSelectedUser} selectedUser={selectedUser} />
+
+      {/* Chat area */}
+      <div className="flex flex-col flex-1">
+        {selectedUser ? (
+          <>
+            <div className="bg-white shadow p-4 font-semibold text-indigo-600 border-b">
+              Chatting with {selectedUser.username}
+            </div>
+            <div className="flex-1 flex flex-col justify-end p-4 overflow-y-auto">
+              <MessageBox selectedUser={selectedUser} />
+            </div>
+            <MessageInput selectedUser={selectedUser} />
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-gray-500">
+            Select a user to start chatting 💬
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
+pages/Login.jsx
+import { useState } from "react";
+import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+
+export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [data, setData] = useState({ username: "", password: "" });
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/login", data);
+      login(res.data, res.data.token); // ✅ pass res.data as user
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid username or password.");
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-200 p-4">
+      <div className="bg-white shadow-2xl rounded-2xl p-6 sm:p-8 w-full max-w-md">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-6">
+          Welcome Back 👋
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            placeholder="👤 Username"
+            value={data.username}
+            onChange={(e) => setData({ ...data, username: e.target.value })}
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+            required
+          />
+          <input
+            type="password"
+            placeholder="🔒 Password"
+            value={data.password}
+            onChange={(e) => setData({ ...data, password: e.target.value })}
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+            required
+          />
+          <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
+            Login
+          </button>
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        </form>
+        <p className="text-center text-sm mt-4">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-indigo-600 font-semibold hover:underline">
+            Register
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+
+
+pages/Register.jsx
+import { useState } from "react";
+import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+
+export default function Register() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [data, setData] = useState({ username: "", password: "", confirmPassword: "" });
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (data.password !== data.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/register", {
+        username: data.username,
+        password: data.password,
+      });
+      login(res.data, res.data.token); // ✅ pass res.data as user
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Username already exists.");
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 p-4">
+      <div className="bg-white shadow-2xl rounded-2xl p-6 sm:p-8 w-full max-w-md">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-6">
+          Create Account
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            placeholder="👤 Enter your username"
+            value={data.username}
+            onChange={(e) => setData({ ...data, username: e.target.value })}
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+            required
+          />
+          <input
+            type="password"
+            placeholder="🔒 Create password"
+            value={data.password}
+            onChange={(e) => setData({ ...data, password: e.target.value })}
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+            required
+          />
+          <input
+            type="password"
+            placeholder="🔒 Confirm password"
+            value={data.confirmPassword}
+            onChange={(e) => setData({ ...data, confirmPassword: e.target.value })}
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+            required
+          />
+          <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
+            Sign Up
+          </button>
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        </form>
+        <p className="text-center text-sm mt-4">
+          Already have an account?{" "}
+          <Link to="/login" className="text-indigo-600 font-semibold hover:underline">
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+
+
+utils/api.js
+import axios from "axios";
+
+const API_BASE = "http://localhost:5000/api";
+
+const getConfig = (token) => ({
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+
+export const getUsers = async (token) => {
+  if (!token) {
+    console.error("No token provided to getUsers!");
+    return [];
+  }
+  try {
+    const res = await axios.get(`${API_BASE}/auth/users`, getConfig(token));
+    return res.data || [];
+  } catch (err) {
+    console.error("getUsers error:", err.response?.data || err.message);
+    return [];
+  }
+};
+
+export const getMessages = async (otherUserId, token) => {
+  if (!token) {
+    console.error("No token provided to getMessages!");
+    return [];
+  }
+  try {
+    const res = await axios.get(`${API_BASE}/messages/${otherUserId}`, getConfig(token));
+    return res.data || [];
+  } catch (err) {
+    console.error("getMessages error:", err.response?.data || err.message);
+    return [];
+  }
+};
+
+export const sendMessage = async (msgData, token) => {
+  if (!token) {
+    console.error("No token provided to sendMessage!");
+    return null;
+  }
+  try {
+    const res = await axios.post(`${API_BASE}/messages`, msgData, getConfig(token));
+    return res.data || null;
+  } catch (err) {
+    console.error("sendMessage error:", err.response?.data || err.message);
+    return null;
+  }
+};
+
+
+
+App.css
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+
+App.jsx
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Chat from "./pages/Chat.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
+
+export default function App() {
+  const { user } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/" element={user ? <Chat /> : <Navigate to="/login" />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+    </Routes>
+  );
+}
+
+
+index.css
+@import "tailwindcss";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+
+main.jsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App.jsx";
+import "./index.css";
+import { AuthProvider } from "./context/AuthContext.jsx";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+
+
