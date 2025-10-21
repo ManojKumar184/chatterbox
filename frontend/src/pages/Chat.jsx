@@ -11,22 +11,45 @@ export default function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-gray-100">
+    <div className="flex flex-col h-screen w-screen bg-gray-100 relative">
       {/* Navbar always visible */}
       <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <ChatList
-          onSelectUser={(u) => {
-            setSelectedUser(u);
-            setSidebarOpen(false); // close sidebar on mobile
-          }}
-          selectedUser={selectedUser}
-          className={`bg-white border-r w-64 md:block fixed md:relative top-0 left-0 h-full z-40 transform transition-transform duration-300 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        {/* Sidebar for desktop */}
+        <div className="hidden md:block w-64 border-r bg-white">
+          <ChatList
+            onSelectUser={(u) => {
+              setSelectedUser(u);
+              setSidebarOpen(false);
+            }}
+            selectedUser={selectedUser}
+          />
+        </div>
+
+        {/* Sidebar overlay for mobile */}
+        <div
+          className={`fixed inset-0 z-40 md:hidden transition-transform duration-300 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
-        />
+        >
+          {/* Background overlay (click to close) */}
+          <div
+            className="absolute inset-0 bg-black opacity-50"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+
+          {/* Sidebar panel */}
+          <div className="relative bg-white w-64 h-full shadow-lg">
+            <ChatList
+              onSelectUser={(u) => {
+                setSelectedUser(u);
+                setSidebarOpen(false);
+              }}
+              selectedUser={selectedUser}
+            />
+          </div>
+        </div>
 
         {/* Chat area */}
         <div className="flex-1 flex flex-col">
