@@ -1,24 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import { sendMessage as apiSendMessage } from "../utils/api.js";
 import socket from "../utils/socket.js";
 
 export default function MessageInput({ selectedUser }) {
-  const { user } = useAuth(); // now user._id exists
+  const { user } = useAuth();
   const [text, setText] = useState("");
 
-  useEffect(() => {
-    console.log("Rendering MessageInput for:", { user, selectedUser });
-  }, [user, selectedUser]);
-
-  const handleSend = async (e) => {
+  const handleSend = (e) => {
     e.preventDefault();
-    console.log("handleSend triggered");
-
-    if (!text.trim() || !user || !user._id || !selectedUser || !selectedUser._id) {
-      console.log("Blocked send — missing data:", { text, user, selectedUser });
-      return;
-    }
+    if (!text.trim() || !user?._id || !selectedUser?._id) return;
 
     const roomId = [user._id, selectedUser._id].sort().join("_");
 
@@ -29,13 +19,8 @@ export default function MessageInput({ selectedUser }) {
       receiver: selectedUser._id,
     };
 
-    // Emit via socket for real-time
-    console.log("Emitting socket message:", newMsg);
+    // Emit via socket only
     socket.emit("sendMessage", newMsg);
-
-    // Save to backend
-    const savedMsg = await apiSendMessage(newMsg, user.token);
-    console.log("Message saved to backend:", savedMsg);
 
     setText(""); // clear input
   };
@@ -49,7 +34,10 @@ export default function MessageInput({ selectedUser }) {
         placeholder="Type a message..."
         className="text-gray-800 flex-1 border rounded-l-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-400 placeholder-gray-400"
       />
-      <button type="submit" className="bg-indigo-600 text-white px-5 py-2 rounded-r-lg hover:bg-indigo-700">
+      <button
+        type="submit"
+        className="bg-indigo-600 text-white px-5 py-2 rounded-r-lg hover:bg-indigo-700"
+      >
         Send
       </button>
     </form>

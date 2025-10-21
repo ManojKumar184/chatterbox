@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import { getMessages } from "../utils/api.js";
-import socket from "../utils/socket.js"; // shared socket
+import socket from "../utils/socket.js";
 
 export default function MessageBox({ selectedUser }) {
-  const { user } = useAuth(); // flattened
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
 
@@ -13,20 +12,23 @@ export default function MessageBox({ selectedUser }) {
 
     const roomId = [user._id, selectedUser._id].sort().join("_");
 
-    // Fetch messages from backend
-    const fetchMessages = async () => {
-      const data = await getMessages(roomId, user.token);
-      setMessages(data);
-    };
-    fetchMessages();
+    // Clear messages when switching user
+    setMessages([]);
 
     // Join socket room
     socket.emit("joinRoom", roomId);
 
     // Listen for incoming messages
     const handleReceive = (msg) => {
-      if (msg.roomId === roomId) setMessages((prev) => [...prev, msg]);
+      if (msg.roomId === roomId) {
+        setMessages((prev) => {
+          // Prevent duplicates if message already exists
+          if (prev.some((m) => m._id === msg._id)) return prev;
+          return [...prev, msg];
+        });
+      }
     };
+
     socket.on("receiveMessage", handleReceive);
 
     return () => {
@@ -40,10 +42,10 @@ export default function MessageBox({ selectedUser }) {
   }, [messages]);
 
   return (
-    <div className="space-y-2 text-gray-800 flex flex-col">
+    <div className="space-y-2 text-gray-800 flex flex-col p-2">
       {messages.map((msg, i) => (
         <div
-          key={i}
+          key={msg._id || i}
           ref={scrollRef}
           className={`p-2 rounded-lg max-w-xs ${
             msg.sender === user._id
