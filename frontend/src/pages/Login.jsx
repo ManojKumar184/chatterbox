@@ -2,17 +2,22 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [data, setData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://chatterbox-9tlu.onrender.com/api/auth/login", data);
+      const res = await axios.post(
+        "https://chatterbox-9tlu.onrender.com/api/auth/login",
+        data
+      );
       login(res.data, res.data.token); // ✅ pass res.data as user
       navigate("/");
     } catch (err) {
@@ -35,19 +40,32 @@ export default function Login() {
             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
             required
           />
-          <input
-            type="password"
-            placeholder="🔒 Password"
-            value={data.password}
-            onChange={(e) => setData({ ...data, password: e.target.value })}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
-            required
-          />
+
+          {/* Password with toggle */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="🔒 Password"
+              value={data.password}
+              onChange={(e) => setData({ ...data, password: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
           <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
             Login
           </button>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
         </form>
+
         <p className="text-center text-sm mt-4">
           Don’t have an account?{" "}
           <Link to="/register" className="text-indigo-600 font-semibold hover:underline">
