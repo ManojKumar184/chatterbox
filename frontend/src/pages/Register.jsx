@@ -81,7 +81,7 @@ export default function Register() {
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border border-gray-300 flex items-center justify-center"
             >
-              {showPassword ? <EyeOff size={20} className="text-black" /> : <Eye size={20} className="text-black" />}
+              {showPassword ? <EyeOff size={20} color="black" /> : <Eye size={20} color="black" />}
             </button>
           </div>
 
@@ -100,7 +100,7 @@ export default function Register() {
               onClick={() => setShowConfirm((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border border-gray-300 flex items-center justify-center"
             >
-              {showConfirm ? <EyeOff size={20} className="text-black" /> : <Eye size={20} className="text-black" />}
+              {showPassword ? <EyeOff size={20} color="black" /> : <Eye size={20} color="black" />}
             </button>
           </div>
 
