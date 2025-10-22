@@ -48,13 +48,13 @@ export default function Login() {
               placeholder="🔒 Password"
               value={data.password}
               onChange={(e) => setData({ ...data, password: e.target.value })}
-              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-200 placeholder-gray-800"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
               required
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-300 text-black"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
