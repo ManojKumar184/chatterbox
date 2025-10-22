@@ -88,7 +88,7 @@ export default function Register() {
             placeholder="🔒 Confirm password"
             value={data.confirmPassword}
             onChange={(e) => setData({ ...data, confirmPassword: e.target.value })}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-200 placeholder-gray-800"
             required
           />
 
