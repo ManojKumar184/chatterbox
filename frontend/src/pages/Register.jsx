@@ -10,6 +10,7 @@ export default function Register() {
   const [data, setData] = useState({ username: "", password: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,6 +55,7 @@ export default function Register() {
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-6">
           Create Account
         </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -64,7 +66,7 @@ export default function Register() {
             required
           />
 
-          {/* Password input with toggle */}
+          {/* Password input */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -77,20 +79,30 @@ export default function Register() {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 bg-white rounded-full border border-gray-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border border-gray-300 flex items-center justify-center"
             >
               {showPassword ? <EyeOff size={20} className="text-black" /> : <Eye size={20} className="text-black" />}
             </button>
           </div>
 
-          <input
-            type="password"
-            placeholder="🔒 Confirm password"
-            value={data.confirmPassword}
-            onChange={(e) => setData({ ...data, confirmPassword: e.target.value })}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
-            required
-          />
+          {/* Confirm password input */}
+          <div className="relative">
+            <input
+              type={showConfirm ? "text" : "password"}
+              placeholder="🔒 Confirm password"
+              value={data.confirmPassword}
+              onChange={(e) => setData({ ...data, confirmPassword: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border border-gray-300 flex items-center justify-center"
+            >
+              {showConfirm ? <EyeOff size={20} className="text-black" /> : <Eye size={20} className="text-black" />}
+            </button>
+          </div>
 
           <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
             Sign Up

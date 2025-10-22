@@ -18,7 +18,7 @@ export default function Login() {
         "https://chatterbox-9tlu.onrender.com/api/auth/login",
         data
       );
-      login(res.data, res.data.token); // ✅ pass res.data as user
+      login(res.data, res.data.token);
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid username or password.");
@@ -31,6 +31,7 @@ export default function Login() {
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-6">
           Welcome Back 👋
         </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -41,7 +42,7 @@ export default function Login() {
             required
           />
 
-          {/* Password with toggle */}
+          {/* Password input with toggle */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -54,15 +55,20 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 bg-white rounded-full border border-gray-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border border-gray-300 flex items-center justify-center"
             >
-              {showPassword ? <EyeOff size={20} className="text-black" /> : <Eye size={20} className="text-black" />}
+              {showPassword ? (
+                <EyeOff size={20} className="text-black" />
+              ) : (
+                <Eye size={20} className="text-black" />
+              )}
             </button>
           </div>
 
           <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
             Login
           </button>
+
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
         </form>
 
