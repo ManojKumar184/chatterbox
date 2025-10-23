@@ -49,24 +49,25 @@ export default function Login() {
               placeholder="🔒 Password"
               value={data.password}
               onChange={(e) => setData({ ...data, password: e.target.value })}
-              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500 pr-10"
               required
             />
 
-            <button
-              type="button"
+            <div
+              role="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 bg-white !important"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center
+                         rounded-full border-2 border-black bg-white z-10 cursor-pointer"
             >
               {showPassword ? (
                 <EyeOff size={20} stroke="black" strokeWidth={2.5} />
               ) : (
                 <Eye size={20} stroke="black" strokeWidth={2.5} />
               )}
-            </button>
+            </div>
           </div>
 
-          <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition !important">
+          <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
             Login
           </button>
 
