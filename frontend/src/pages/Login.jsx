@@ -26,13 +26,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen min-w-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-200 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-200 p-4">
       <div className="bg-white shadow-2xl rounded-2xl p-6 sm:p-8 w-full max-w-md">
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-6">
           Welcome Back 👋
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Username */}
           <input
             type="text"
             placeholder="👤 Username"
@@ -42,30 +43,33 @@ export default function Login() {
             required
           />
 
-          {/* Password input with toggle */}
+          {/* Password */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="🔒 Password"
               value={data.password}
               onChange={(e) => setData({ ...data, password: e.target.value })}
-              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+              className="w-full border border-gray-300 p-3 rounded-lg pr-12 focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
               required
             />
 
+            {/* Toggle */}
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 bg-white "
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 w-10 h-10 flex items-center justify-center
+                         rounded-full border-2 border-black bg-white z-10"
             >
               {showPassword ? (
-                <EyeOff size={20} stroke="black" strokeWidth={2.5} />
+                <EyeOff size={20} stroke="black" />
               ) : (
-                <Eye size={20} stroke="black" strokeWidth={2.5} />
+                <Eye size={20} stroke="black" />
               )}
             </button>
           </div>
 
+          {/* Login */}
           <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
             Login
           </button>
@@ -73,6 +77,7 @@ export default function Login() {
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
         </form>
 
+        {/* Register */}
         <p className="text-center text-sm mt-4">
           Don’t have an account?{" "}
           <Link
