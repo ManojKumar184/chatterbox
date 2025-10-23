@@ -52,15 +52,31 @@ export default function Login() {
               className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
               required
             />
+
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-black rounded-full flex items-center justify-center shadow-[0_0_4px_rgba(0,0,0,0.6)]"
+              style={{
+                backgroundColor: "#ffffff",
+                border: "2px solid #000000",
+                borderRadius: "50%",
+                width: "2rem",
+                height: "2rem",
+                position: "absolute",
+                right: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 0 5px rgba(0,0,0,0.5)",
+                zIndex: 10,
+              }}
             >
               {showPassword ? (
-                <EyeOff size={20} stroke="black" fill="white" strokeWidth={2} />
+                <EyeOff size={20} stroke="black" strokeWidth={2} />
               ) : (
-                <Eye size={20} stroke="black" fill="white" strokeWidth={2} />
+                <Eye size={20} stroke="black" strokeWidth={2} />
               )}
             </button>
           </div>
