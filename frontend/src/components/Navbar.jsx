@@ -23,7 +23,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
       {/* Right: Logout button as icon */}
       <button
         onClick={logout}
-        className="bg-red-500 p-2 rounded hover:bg-red-600 flex items-center justify-center transition"
+        className="flex-shrink-0 bg-red-500 p-2 rounded hover:bg-red-600 flex items-center justify-center transition ml-2 md:ml-0"
         title="Logout"
       >
         <LogOut size={20} />
