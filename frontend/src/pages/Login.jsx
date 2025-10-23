@@ -56,13 +56,12 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center 
-                         rounded-full border-2 border-black bg-gray-50 shadow-sm"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-50 shadow-sm"
             >
               {showPassword ? (
-                <EyeOff size={20} stroke="black" strokeWidth={2} />
+                <EyeOff size={20} stroke="black" strokeWidth={2.5} />
               ) : (
-                <Eye size={20} stroke="black" strokeWidth={2} />
+                <Eye size={20} stroke="black" strokeWidth={2.5} />
               )}
             </button>
           </div>
