@@ -73,16 +73,16 @@ export default function Register() {
               placeholder="🔒 Create password"
               value={data.password}
               onChange={(e) => setData({ ...data, password: e.target.value })}
-              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500 pr-10"
               required
             />
-            <button
-              type="button"
+            <div
+              role="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border border-gray-300 flex items-center justify-center"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-white z-10 cursor-pointer"
             >
-              {showPassword ? <EyeOff size={20} color="black" /> : <Eye size={20} color="black" />}
-            </button>
+              {showPassword ? <EyeOff size={20} stroke="black" /> : <Eye size={20} stroke="black" />}
+            </div>
           </div>
 
           {/* Confirm password input */}
@@ -92,21 +92,26 @@ export default function Register() {
               placeholder="🔒 Confirm password"
               value={data.confirmPassword}
               onChange={(e) => setData({ ...data, confirmPassword: e.target.value })}
-              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500 pr-10"
               required
             />
-            <button
-              type="button"
+            <div
+              role="button"
               onClick={() => setShowConfirm((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border border-gray-300 flex items-center justify-center"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-white z-10 cursor-pointer"
             >
-              {showPassword ? <EyeOff size={20} color="black" /> : <Eye size={20} color="black" />}
-            </button>
+              {showConfirm ? <EyeOff size={20} stroke="black" /> : <Eye size={20} stroke="black" />}
+            </div>
           </div>
 
-          <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
+          {/* Sign Up div */}
+          <div
+            onClick={handleSubmit}
+            className="w-full bg-indigo-600 text-white p-3 rounded-lg text-center hover:bg-indigo-700 transition cursor-pointer"
+          >
             Sign Up
-          </button>
+          </div>
+
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
         </form>
 
