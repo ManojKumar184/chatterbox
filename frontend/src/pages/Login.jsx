@@ -57,7 +57,7 @@ export default function Login() {
               role="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center
-                         rounded-full border-2 border-black bg-white z-10 cursor-pointer"
+                         rounded-full bg-white z-10 cursor-pointer"
             >
               {showPassword ? (
                 <EyeOff size={20} stroke="black" strokeWidth={2.5} />
@@ -67,9 +67,13 @@ export default function Login() {
             </div>
           </div>
 
-          <button className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition">
+          {/* Login div instead of button */}
+          <div
+            onClick={handleSubmit}
+            className="w-full bg-indigo-600 text-white p-3 rounded-lg text-center hover:bg-indigo-700 transition cursor-pointer"
+          >
             Login
-          </button>
+          </div>
 
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
         </form>
