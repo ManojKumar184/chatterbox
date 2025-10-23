@@ -57,7 +57,7 @@ export default function Login() {
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center 
-                         rounded-full border-2 border-black bg-white shadow-sm"
+                         rounded-full border-2 border-black bg-gray-50 shadow-sm"
             >
               {showPassword ? (
                 <EyeOff size={20} stroke="black" strokeWidth={2} />
