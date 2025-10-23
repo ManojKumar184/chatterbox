@@ -26,7 +26,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen min-w-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-200 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-200 p-4">
       <div className="bg-white shadow-2xl rounded-2xl p-6 sm:p-8 w-full max-w-md">
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-6">
           Welcome Back 👋
@@ -42,27 +42,26 @@ export default function Login() {
             required
           />
 
-          {/* Password input with toggle */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="🔒 Password"
               value={data.password}
               onChange={(e) => setData({ ...data, password: e.target.value })}
-              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 placeholder-gray-500 pr-10"
               required
             />
 
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center 
                          rounded-full border-2 border-black bg-white z-10"
             >
               {showPassword ? (
-                <EyeOff size={20} stroke="black" strokeWidth={2.5} />
+                <EyeOff size={20} strokeWidth={2} color="black" />
               ) : (
-                <Eye size={20} stroke="black" strokeWidth={2.5} />
+                <Eye size={20} strokeWidth={2} color="black" />
               )}
             </button>
           </div>
