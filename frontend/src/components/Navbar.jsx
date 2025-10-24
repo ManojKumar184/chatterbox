@@ -17,15 +17,15 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
       </div>
 
       {/* Center: App Name (responsive text size) */}
-      <h1 className="absolute left-1/2 transform -translate-x-1/2 font-semibold text-center whitespace-nowrap text-base sm:text-lg md:text-xl lg:text-2xl tracking-wide">
+      <h3 className="absolute left-1/2 transform -translate-x-1/2 font-semibold text-center whitespace-nowrap text-base sm:text-lg md:text-xl lg:text-2xl tracking-wide">
         ChatterBox
-      </h1>
+      </h3s>
 
       {/* Right: Logout icon */}
       <div
         role="button"
         onClick={logout}
-        className="flex-shrink-0 bg-red-600 p-2 rounded hover:bg-red-700 flex items-center justify-center transition z-10 cursor-pointer"
+        className="flex-shrink-0 bg-indigo-800 p-2 rounded hover:bg-red-700 flex items-center justify-center transition z-10 cursor-pointer"
         title="Logout"
       >
         <LogOut size={22} className="text-gray-100" />
