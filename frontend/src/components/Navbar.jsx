@@ -19,7 +19,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
       {/* Center: App Name (responsive text size) */}
       <h3 className="absolute left-1/2 transform -translate-x-1/2 font-semibold text-center whitespace-nowrap text-base sm:text-lg md:text-xl lg:text-2xl tracking-wide">
         ChatterBox
-      </h3s>
+      </h3>
 
       {/* Right: Logout icon */}
       <div
