@@ -34,12 +34,12 @@ export default function MessageInput({ selectedUser }) {
         placeholder="Type a message..."
         className="text-gray-800 flex-1 border rounded-l-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-400 placeholder-gray-400"
       />
-      <button
-        type="submit"
+      <div
+        role="submit"
         className="bg-indigo-600 text-white px-5 py-2 rounded-r-lg hover:bg-indigo-700"
       >
         Send
-      </button>
+      </div>
     </form>
   );
 }
